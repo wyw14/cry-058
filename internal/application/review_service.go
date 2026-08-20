@@ -16,7 +16,7 @@ func (s *ReviewService) Decide(ctx context.Context, claimID string, actor domain
 	if e != nil {
 		return nil, e
 	}
-	if c.Status != domain.ClaimSubmitted {
+	if c.Status != domain.ClaimSubmitted && c.Status != domain.ClaimReturned {
 		return nil, domain.StateError("当前申报状态不能复核")
 	}
 	if approved {
