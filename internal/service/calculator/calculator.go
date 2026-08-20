@@ -9,9 +9,6 @@ type Result struct {
 }
 
 func Calculate(amount int64, rule *domain.RuleVersion, used int64) Result {
-	if rule == nil {
-		return Result{Warnings: []string{"未找到适用规则"}}
-	}
 	if amount < 0 {
 		amount = 0
 	}
