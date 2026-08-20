@@ -8,7 +8,6 @@ import (
 	"io"
 	"os"
 	"path/filepath"
-	"strings"
 )
 
 type Store struct{ root string }
@@ -18,9 +17,6 @@ func New(root string) *Store { return &Store{root: root} }
 func (s *Store) Save(owner string, name string, media string, r io.Reader) (domain.Attachment, error) {
 	if owner == "" || name == "" {
 		return domain.Attachment{}, errors.New("missing owner or name")
-	}
-	if strings.Contains(name, "..") || strings.ContainsAny(name, `/\\`) {
-		return domain.Attachment{}, errors.New("unsafe file name")
 	}
 	if media != "application/pdf" && media != "image/jpeg" && media != "image/png" {
 		return domain.Attachment{}, errors.New("unsupported media")
