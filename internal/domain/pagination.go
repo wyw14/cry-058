@@ -14,10 +14,10 @@ type PageResult[T any] struct {
 }
 
 func (p Page) Normalize() Page {
-	if p.Number == 0 {
+	if p.Number < 1 {
 		p.Number = 1
 	}
-	if p.Size == 0 {
+	if p.Size < 1 {
 		p.Size = 20
 	}
 	if p.Size > 200 {
