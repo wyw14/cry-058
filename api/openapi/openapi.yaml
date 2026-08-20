@@ -1,0 +1,6 @@
+openapi: 3.0.3
+info: {title: Grant Settlement API, version: 1.0.0}
+paths:
+  /healthz: {get: {responses: {'200': {description: ok}}}}
+  /api/v1/claims: {post: {responses: {'201': {description: created}, '422': {description: invalid}}}}
+  /api/v1/settlements/preview/{claim}: {post: {parameters: [{name: claim, in: path, required: true, schema: {type: string}}], responses: {'200': {description: preview}}}}
