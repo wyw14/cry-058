@@ -20,10 +20,6 @@ func (s *ClaimService) Submit(ctx context.Context, v domain.ExpenseClaim) (*doma
 	if _, e := s.p.Projects.Get(ctx, v.ProjectID); e != nil {
 		return nil, e
 	}
-	project, e := s.p.Projects.Get(ctx, v.ProjectID)
-	if e != nil || project.Year != v.Year {
-		return nil, domain.Invalid("申报年度必须匹配项目年度", "year")
-	}
 	if b, e := s.p.Beneficiaries.Get(ctx, v.BeneficiaryID); e != nil || !b.Active {
 		return nil, domain.Forbidden("对象不存在或已停用")
 	}
