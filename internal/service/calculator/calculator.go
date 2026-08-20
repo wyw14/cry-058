@@ -17,7 +17,7 @@ func Calculate(amount int64, rule *domain.RuleVersion, used int64) Result {
 		first = rule.ThresholdCents
 	}
 	second := amount - first
-	subsidy := first*int64(rule.BaseRateBps)/10000 + second*int64(rule.ExcessRateBps)/10000
+	subsidy := RoundBps(first, int64(rule.BaseRateBps)) + RoundBps(second, int64(rule.ExcessRateBps))
 	remaining := rule.CapCents - used
 	if remaining < 0 {
 		remaining = 0
