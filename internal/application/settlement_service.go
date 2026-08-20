@@ -18,7 +18,12 @@ func (s *SettlementService) Preview(ctx context.Context, claimID string) (*domai
 	}
 	r, e := s.p.Rules.Latest(ctx, c.ProjectID, c.Year)
 	if e != nil {
-		return nil, nil, e
+		// 未匹配到已发布规则时不得崩溃：安全返回零补助的预览与明确提示，
+		// 让调用方拿到可解释结果而非空指针错误。
+		ledger, _ := s.p.Settlements.Ledger(ctx, c.ProjectID, c.BeneficiaryID, c.Year)
+		res := calculator.Calculate(c.AmountCents, nil, ledger.PaidCents+ledger.ReservedCents)
+		v := &domain.Settlement{ID: id.New("set"), ClaimID: c.ID, ProjectID: c.ProjectID, BeneficiaryID: c.BeneficiaryID, RuleID: "", Year: c.Year, ClaimedCents: c.AmountCents, SubsidyCents: 0, Lines: res.Lines, Status: domain.SettlementPreview, CreatedAt: time.Now().UTC()}
+		return v, res.Warnings, nil
 	}
 	ledger, _ := s.p.Settlements.Ledger(ctx, c.ProjectID, c.BeneficiaryID, c.Year)
 	res := calculator.Calculate(c.AmountCents, r, ledger.PaidCents+ledger.ReservedCents)
@@ -36,7 +41,12 @@ func (s *SettlementService) Confirm(ctx context.Context, v *domain.Settlement, a
 	if e != nil {
 		return nil, e
 	}
-	if ledger.PaidCents+ledger.ReservedCents+v.SubsidyCents > 0 && ledger.PaidCents+ledger.ReservedCents+v.SubsidyCents > v.Lines[0].RemainingCents+ledger.PaidCents+ledger.ReservedCents {
+	// 预览若无匹配规则，Lines 为空且补助为零，确认时按零补助处理，避免越界。
+	var remaining int64
+	if len(v.Lines) > 0 {
+		remaining = v.Lines[0].RemainingCents
+	}
+	if ledger.PaidCents+ledger.ReservedCents+v.SubsidyCents > 0 && ledger.PaidCents+ledger.ReservedCents+v.SubsidyCents > remaining+ledger.PaidCents+ledger.ReservedCents {
 		return nil, domain.Conflict("年度累计额度不足")
 	}
 	v.Status = domain.SettlementConfirmed

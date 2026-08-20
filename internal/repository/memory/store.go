@@ -327,7 +327,21 @@ func (r *SettlementRepo) Ledger(ctx context.Context, p, b string, y int) (*domai
 func (r *SettlementRepo) SaveLedger(ctx context.Context, v *domain.AnnualLedger) error {
 	r.s.mu.Lock()
 	defer r.s.mu.Unlock()
-	r.s.ledgers[v.ProjectID+":"+v.BeneficiaryID+":"+timeKey(v.Year)] = cloneLedger(v)
+	key := v.ProjectID + ":" + v.BeneficiaryID + ":" + timeKey(v.Year)
+	old, ok := r.s.ledgers[key]
+	if !ok {
+		// 首次落库接受写入，版本从 1 起算。
+		if v.Version < 1 {
+			v.Version = 1
+		}
+		r.s.ledgers[key] = cloneLedger(v)
+		return nil
+	}
+	// 乐观锁：提交版本必须正好是当前版本 +1，否则判定为陈旧写入予以拒绝。
+	if old.Version+1 != v.Version {
+		return domain.Conflict("账本版本冲突")
+	}
+	r.s.ledgers[key] = cloneLedger(v)
 	return nil
 }
 func (r *SettlementRepo) ListByYear(ctx context.Context, p string, y int) ([]*domain.Settlement, error) {

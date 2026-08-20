@@ -8,7 +8,14 @@ type Result struct {
 	Warnings     []string
 }
 
+// nilRuleWarning 标识未匹配到规则的场景：补助必须安全归零并给出可解释提示，
+// 而不能触发空指针崩溃使调用方拿不到任何结果。
+const nilRuleWarning = "未匹配到适用规则，本次试算补助为零"
+
 func Calculate(amount int64, rule *domain.RuleVersion, used int64) Result {
+	if rule == nil {
+		return Result{SubsidyCents: 0, Lines: nil, Warnings: []string{nilRuleWarning}}
+	}
 	if amount < 0 {
 		amount = 0
 	}
