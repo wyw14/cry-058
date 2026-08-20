@@ -6,10 +6,6 @@ func RoundBps(cents int64, bps int64) int64 {
 	}
 	product := cents * bps
 	quotient := product / 10000
-	remainder := product % 10000
-	if remainder >= 5000 {
-		quotient++
-	}
 	return quotient
 }
 
