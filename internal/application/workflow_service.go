@@ -23,6 +23,9 @@ func (s *WorkflowService) Return(ctx context.Context, claim string, actor domain
 	}
 	return s.claims.Return(ctx, claim, reason)
 }
+func (s *WorkflowService) Resubmit(ctx context.Context, claim string) (*domain.ExpenseClaim, error) {
+	return s.claims.Resubmit(ctx, claim)
+}
 func (s *WorkflowService) Preview(ctx context.Context, claim string) (*domain.Settlement, []string, error) {
 	return s.settlements.Preview(ctx, claim)
 }

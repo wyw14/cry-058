@@ -44,3 +44,15 @@ func (s *ClaimService) Return(ctx context.Context, idv string, reason string) (*
 	v.Version++
 	return v, s.p.Claims.Update(ctx, v)
 }
+func (s *ClaimService) Resubmit(ctx context.Context, idv string) (*domain.ExpenseClaim, error) {
+	v, e := s.p.Claims.Get(ctx, idv)
+	if e != nil {
+		return nil, e
+	}
+	if v.Status != domain.ClaimReturned {
+		return nil, domain.StateError("只有已退回申报可重新提交")
+	}
+	v.Status = domain.ClaimSubmitted
+	v.Version++
+	return v, s.p.Claims.Update(ctx, v)
+}
