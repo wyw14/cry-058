@@ -25,9 +25,6 @@ func (s *ProjectService) Activate(ctx context.Context, idv string) (*domain.Gran
 	if e != nil {
 		return nil, e
 	}
-	if v.Status == domain.ProjectClosed {
-		return nil, domain.StateError("已关闭项目不能激活")
-	}
 	v.Status = domain.ProjectActive
 	v.Version++
 	return v, s.p.Projects.Update(ctx, v)

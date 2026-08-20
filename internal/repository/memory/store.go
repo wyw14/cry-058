@@ -223,11 +223,6 @@ type RuleRepo struct{ s *Store }
 func (r *RuleRepo) Create(ctx context.Context, v *domain.RuleVersion) error {
 	r.s.mu.Lock()
 	defer r.s.mu.Unlock()
-	for _, old := range r.s.rules {
-		if old.ProjectID == v.ProjectID && old.SchemeID == v.SchemeID && old.Year == v.Year && old.VersionNo == v.VersionNo {
-			return domain.Conflict("规则版本已存在")
-		}
-	}
 	r.s.rules[v.ID] = cloneRule(v)
 	return nil
 }
@@ -332,11 +327,7 @@ func (r *SettlementRepo) Ledger(ctx context.Context, p, b string, y int) (*domai
 func (r *SettlementRepo) SaveLedger(ctx context.Context, v *domain.AnnualLedger) error {
 	r.s.mu.Lock()
 	defer r.s.mu.Unlock()
-	key := v.ProjectID + ":" + v.BeneficiaryID + ":" + timeKey(v.Year)
-	if old, ok := r.s.ledgers[key]; ok && old.Version != v.Version-1 {
-		return domain.Conflict("年度台账版本冲突")
-	}
-	r.s.ledgers[key] = cloneLedger(v)
+	r.s.ledgers[v.ProjectID+":"+v.BeneficiaryID+":"+timeKey(v.Year)] = cloneLedger(v)
 	return nil
 }
 func (r *SettlementRepo) ListByYear(ctx context.Context, p string, y int) ([]*domain.Settlement, error) {
