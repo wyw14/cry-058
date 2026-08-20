@@ -41,12 +41,9 @@ func (s *ReportService) Build(ctx context.Context, project string, year int) (An
 		}
 	}
 	for _, v := range settlements {
-		if v.Status == domain.SettlementConfirmed || v.Status == domain.SettlementRevoked {
+		if v.Status == domain.SettlementConfirmed {
 			r.SettledCount++
 			r.SubsidyCents += v.SubsidyCents
-		}
-		if v.Status == domain.SettlementRevoked {
-			r.SubsidyCents -= v.SubsidyCents
 		}
 	}
 	return r, nil
