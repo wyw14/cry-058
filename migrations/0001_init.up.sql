@@ -1,3 +1,5 @@
 CREATE TABLE IF NOT EXISTS grant_projects (id text primary key, code text unique not null, name text not null, year integer not null, annual_cap_cents bigint not null, version integer not null default 1);
 CREATE TABLE IF NOT EXISTS expense_claims (id text primary key, project_id text not null, beneficiary_id text not null, amount_cents bigint not null, status text not null, idempotency_key text unique not null);
 CREATE TABLE IF NOT EXISTS settlements (id text primary key, claim_id text not null, subsidy_cents bigint not null, status text not null, version integer not null default 1);
+CREATE TABLE IF NOT EXISTS rule_versions (id text primary key, project_id text not null, scheme_id text not null, name text not null, year integer not null, base_rate_bps integer not null, excess_rate_bps integer not null default 0, threshold_cents bigint not null default 0, cap_cents bigint not null default 0, status text not null, version_no integer not null, published_at timestamptz, created_at timestamptz not null default now());
+CREATE UNIQUE INDEX IF NOT EXISTS rule_versions_version_key ON rule_versions (project_id, scheme_id, year, version_no);

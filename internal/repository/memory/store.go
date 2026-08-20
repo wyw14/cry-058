@@ -223,6 +223,11 @@ type RuleRepo struct{ s *Store }
 func (r *RuleRepo) Create(ctx context.Context, v *domain.RuleVersion) error {
 	r.s.mu.Lock()
 	defer r.s.mu.Unlock()
+	for _, ex := range r.s.rules {
+		if ex.VersionKey() == v.VersionKey() {
+			return domain.Conflict("规则版本号已存在")
+		}
+	}
 	r.s.rules[v.ID] = cloneRule(v)
 	return nil
 }

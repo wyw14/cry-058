@@ -1,6 +1,9 @@
 package domain
 
-import "time"
+import (
+	"fmt"
+	"time"
+)
 
 type RuleStatus string
 
@@ -32,4 +35,10 @@ func (r RuleVersion) Validate() error {
 		return Invalid("规则比例无效", "rate")
 	}
 	return nil
+}
+
+// VersionKey 是区分规则版本的唯一业务键：同一项目、方案、年度下版本号唯一。
+// 不同版本号或不同业务组合不受重复校验影响。
+func (r RuleVersion) VersionKey() string {
+	return fmt.Sprintf("%s:%s:%d:%d", r.ProjectID, r.SchemeID, r.Year, r.VersionNo)
 }
