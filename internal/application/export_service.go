@@ -21,7 +21,6 @@ func (s *ExportService) CSV(ctx context.Context, w io.Writer, project string, ye
 		return e
 	}
 	for _, v := range rows {
-		if v.Status != domain.SettlementConfirmed { continue }
 		if e = c.Write([]string{v.ID, v.ClaimID, string(v.Status), strconv.FormatInt(v.SubsidyCents, 10)}); e != nil {
 			return e
 		}
