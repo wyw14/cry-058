@@ -17,8 +17,12 @@ func (s *ClaimService) Submit(ctx context.Context, v domain.ExpenseClaim) (*doma
 	if old, e := s.p.Claims.GetByIdempotency(ctx, v.IdempotencyKey); e == nil {
 		return old, nil
 	}
-	if _, e := s.p.Projects.Get(ctx, v.ProjectID); e != nil {
+	proj, e := s.p.Projects.Get(ctx, v.ProjectID)
+	if e != nil {
 		return nil, e
+	}
+	if v.Year != proj.Year {
+		return nil, domain.Conflict("申报年度与项目年度不一致")
 	}
 	if b, e := s.p.Beneficiaries.Get(ctx, v.BeneficiaryID); e != nil || !b.Active {
 		return nil, domain.Forbidden("对象不存在或已停用")
@@ -29,8 +33,10 @@ func (s *ClaimService) Submit(ctx context.Context, v domain.ExpenseClaim) (*doma
 	v.ID = id.New("clm")
 	v.Status = domain.ClaimSubmitted
 	v.CreatedAt = time.Now().UTC()
-	e := s.p.Claims.Create(ctx, &v)
-	return &v, e
+	if e := s.p.Claims.Create(ctx, &v); e != nil {
+		return nil, e
+	}
+	return &v, nil
 }
 func (s *ClaimService) Return(ctx context.Context, idv string, reason string) (*domain.ExpenseClaim, error) {
 	v, e := s.p.Claims.Get(ctx, idv)
