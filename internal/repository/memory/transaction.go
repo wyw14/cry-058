@@ -46,11 +46,7 @@ func (t *Tx) Confirm(v *domain.Settlement, l *domain.AnnualLedger) error {
 func (s *Store) SaveLedger(ctx context.Context, v *domain.AnnualLedger) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
-	key := v.ProjectID + ":" + v.BeneficiaryID + ":" + timeKey(v.Year)
-	if old, ok := s.ledgers[key]; ok && old.Version != v.Version-1 {
-		return domain.Conflict("年度台账版本冲突")
-	}
-	s.ledgers[key] = cloneLedger(v)
+	s.ledgers[v.ProjectID+":"+v.BeneficiaryID+":"+timeKey(v.Year)] = cloneLedger(v)
 	return nil
 }
 func (s *Store) SaveSettlement(ctx context.Context, v *domain.Settlement) error {
